@@ -22,6 +22,7 @@ export interface childRequests {
         'sslapi.hitokoto.cn': hostChild;
         'api.hitokoto.cn': hostChild;
         'api.a632079.me': hostChild;
+        'international.v1.hitokoto.cn': hostChild;
     };
 }
 export interface childServerStatus {
@@ -76,6 +77,7 @@ export interface exportData {
             'v1.hitokoto.cn': hostChild;
             'api.hitokoto.cn': hostChild;
             'sslapi.hitokoto.cn': hostChild;
+            'international.v1.hitokoto.cn': hostChild;
         };
     };
     lastUpdate: number;

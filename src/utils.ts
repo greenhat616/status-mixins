@@ -26,7 +26,8 @@ export interface childRequests {
         'v1.hitokoto.cn': hostChild,
         'sslapi.hitokoto.cn': hostChild,
         'api.hitokoto.cn': hostChild,
-        'api.a632079.me': hostChild
+        'api.a632079.me': hostChild,
+        'international.v1.hitokoto.cn': hostChild
     }
 }
 
@@ -85,7 +86,8 @@ export interface exportData {
         hosts: {
             'v1.hitokoto.cn': hostChild,
             'api.hitokoto.cn': hostChild,
-            'sslapi.hitokoto.cn': hostChild
+            'sslapi.hitokoto.cn': hostChild,
+            'international.v1.hitokoto.cn': hostChild
         },
     },
     lastUpdate: number,
@@ -158,6 +160,13 @@ export async function applyMinxin(children: Array<statusBody>, downServerList: d
                     pastHour: 0,
                     pastDay: 0,
                     dayMap: []
+                },
+                'international.v1.hitokoto.cn': {
+                    total: 0,
+                    pastMinute: 0,
+                    pastHour: 0,
+                    pastDay: 0,
+                    dayMap: []
                 }
             },
         },
@@ -173,7 +182,7 @@ export async function applyMinxin(children: Array<statusBody>, downServerList: d
     let v1DayMapBuffer: Array<number> = []
     let apiDayMapBuffer: Array<number> = []
     let sslapiDayMapBuffer: Array<number> = []
-
+    let internationalDayMapBuffer: Array<number> = []
     // 迭代数据集， 合并数据
     for (let child of children) {
         // 汇总子节点名称
@@ -225,17 +234,19 @@ export async function applyMinxin(children: Array<statusBody>, downServerList: d
         }
 
         // 汇总 hosts 统计
-        result.requests.hosts['v1.hitokoto.cn'].total += child.requests.hosts['v1.hitokoto.cn'].total
-        result.requests.hosts['v1.hitokoto.cn'].pastMinute += child.requests.hosts['v1.hitokoto.cn'].pastMinute
-        result.requests.hosts['v1.hitokoto.cn'].pastHour += child.requests.hosts['v1.hitokoto.cn'].pastHour
-        result.requests.hosts['v1.hitokoto.cn'].pastDay += child.requests.hosts['v1.hitokoto.cn'].pastDay
-        if (v1DayMapBuffer.length === 0) { // 汇总 FiveMinuteMap 统计
-            // 缓存为空
-            v1DayMapBuffer = child.requests.hosts['v1.hitokoto.cn'].dayMap
-        } else {
-            // 汇总
-            for (let index in child.requests.hosts['v1.hitokoto.cn'].dayMap) {
-                v1DayMapBuffer[index] += child.requests.hosts['v1.hitokoto.cn'].dayMap[index]
+        if (typeof child.requests.hosts['v1.hitokoto.cn'] !== 'undefined') {
+            result.requests.hosts['v1.hitokoto.cn'].total += child.requests.hosts['v1.hitokoto.cn'].total
+            result.requests.hosts['v1.hitokoto.cn'].pastMinute += child.requests.hosts['v1.hitokoto.cn'].pastMinute
+            result.requests.hosts['v1.hitokoto.cn'].pastHour += child.requests.hosts['v1.hitokoto.cn'].pastHour
+            result.requests.hosts['v1.hitokoto.cn'].pastDay += child.requests.hosts['v1.hitokoto.cn'].pastDay
+            if (v1DayMapBuffer.length === 0) { // 汇总 FiveMinuteMap 统计
+                // 缓存为空
+                v1DayMapBuffer = child.requests.hosts['v1.hitokoto.cn'].dayMap
+            } else {
+                // 汇总
+                for (let index in child.requests.hosts['v1.hitokoto.cn'].dayMap) {
+                    v1DayMapBuffer[index] += child.requests.hosts['v1.hitokoto.cn'].dayMap[index]
+                }
             }
         }
 
@@ -270,6 +281,22 @@ export async function applyMinxin(children: Array<statusBody>, downServerList: d
                 }
             }
         }
+
+        if (typeof child.requests.hosts['international.v1.hitokoto.cn'] !== 'undefined') {
+            result.requests.hosts['international.v1.hitokoto.cn'].total += child.requests.hosts['international.v1.hitokoto.cn'].total
+            result.requests.hosts['international.v1.hitokoto.cn'].pastMinute += child.requests.hosts['international.v1.hitokoto.cn'].pastMinute
+            result.requests.hosts['international.v1.hitokoto.cn'].pastHour += child.requests.hosts['international.v1.hitokoto.cn'].pastHour
+            result.requests.hosts['international.v1.hitokoto.cn'].pastDay += child.requests.hosts['international.v1.hitokoto.cn'].pastDay
+            if (internationalDayMapBuffer.length === 0) { // 汇总 FiveMinuteMap 统计
+                // 缓存为空
+                internationalDayMapBuffer = child.requests.hosts['international.v1.hitokoto.cn'].dayMap
+            } else {
+                // 汇总
+                for (let index in child.requests.hosts['international.v1.hitokoto.cn'].dayMap) {
+                    internationalDayMapBuffer[index] += child.requests.hosts['international.v1.hitokoto.cn'].dayMap[index]
+                }
+            }
+        }
     }
 
     // 计算 load 平均值
@@ -283,6 +310,7 @@ export async function applyMinxin(children: Array<statusBody>, downServerList: d
     result.requests.hosts['v1.hitokoto.cn'].dayMap = v1DayMapBuffer
     result.requests.hosts['api.hitokoto.cn'].dayMap = apiDayMapBuffer
     result.requests.hosts['sslapi.hitokoto.cn'].dayMap = sslapiDayMapBuffer
+    result.requests.hosts['international.v1.hitokoto.cn'].dayMap = internationalDayMapBuffer
 
     // 合并 宕机服务
     if (downServerList.data.length > 0) {
